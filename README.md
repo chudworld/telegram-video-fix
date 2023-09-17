@@ -3,6 +3,9 @@ determines and reencodes the audio of .mp4 files from Telegram to allow playback
 
 Chromium has a bug where it will not play videos that contain AAC audio with the HE-AACv2/HE-AAC/LC Profile. 
 Telegram on the other hand uses this as a default for when they reencode a video.
+Example Video:
+https://files.catbox.moe/x7lahk.mp4
+
 
 This script goes through the passed files, detecting if the HE-AACv2 is present (using ffprobe), and if yes reencoding the audio to default AAC (using ffmpeg)
 
