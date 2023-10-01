@@ -30,10 +30,13 @@ If ($Args.count -eq 0) {
 		$extn = [IO.Path]::GetExtension($File)
 		if ($extn -eq ".mp4") {
 			$File = [Management.Automation.WildcardPattern]::Escape($File)
-			$probe = [String](& ffprobe -hide_banner -select_streams a:0 "$File" 2>&1)
-			if ($probe -notlike "*HE-AACv2*") {
+			$probe = [String](& ffprobe -hide_banner -loglevel panic -show_streams "$File" 2>&1)
+			if ($probe -like "*codec_name=hevc*") {
+				"[$i/$Total] Skipped: $File (HEVC)"
+			} Elseif ($probe -notlike "*profile=HE-AACv2*") {
 				"[$i/$Total] Skipped: $File (healthy)"
-			} Else {
+			}
+			Else {
 			$FileName = Split-Path $File -leaf
 			$FolderPath = Split-Path $File -Parent
 			$FolderPath = $FolderPath + "\"
@@ -46,7 +49,7 @@ If ($Args.count -eq 0) {
 				$Counter = $Counter + 1
 				$TempFile = $FolderPath + $FileNameNoextn + "_" + $Counter + $extn
 			}
-			ffmpeg -hide_banner -loglevel panic -i "$File" -c:v copy "$TempFile"
+			ffmpeg -hide_banner -loglevel panic -i "$File" -c:v copy -vbr 5 "$TempFile"
 			Remove-Item "$File"
 			Rename-Item -Path "$TempFile" -NewName "$FileName"
 			}
@@ -56,5 +59,8 @@ If ($Args.count -eq 0) {
 		$i = $i + 1
 	}
   }
-Read-Host -Prompt "Press Enter to exit"
+"Done. This Window will close automatically in 5 Seconds..."
+
+timeout.exe 5
+
 Exit
